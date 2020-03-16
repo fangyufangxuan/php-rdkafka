@@ -766,8 +766,136 @@ PHP_METHOD(RdKafka__Producer, __construct)
 }
 /* }}} */
 
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
+/* {{{ proto int RdKafka\Producer::initTransactions(int timeout_ms)
+   Initializes transactions, needs to be done before producing and starting a transaction */
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_init_transactions, 0, 0, 1)
+    ZEND_ARG_INFO(0, timeout_ms)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(RdKafka__Kafka, initTransactions)
+{
+    kafka_object *intern;
+    zend_long timeout_ms;
+    rd_kafka_error_t error;
+    long errorCode;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout_ms) == FAILURE) {
+        return;
+    }
+
+    intern = get_kafka_object(getThis() TSRMLS_CC);
+    if (!intern) {
+        return;
+    }
+
+    error = rd_kafka_init_transactions(intern->rk, timeout_ms);
+
+    if (NULL == error) {
+        RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
+    }
+
+    if (rd_kafka_error_is_fatal(error) || !rd_kafka_error_is_retriable(error)) {
+        zend_throw_exception(ce_kafka_exception, rd_kafka_error_string(error), rd_kafka_error_code(error) TSRMLS_CC);
+        rd_kafka_error_destroy(error);
+        return;
+    }
+
+    errorCode = rd_kafka_error_code(error);
+    rd_kafka_error_destroy(error);
+
+    RETURN_LONG(errorCode);
+}
+/* }}} */
+
+/* {{{ proto int RdKafka\Producer::beginTransaction()
+   Start a transaction */
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_begin_transaction, 0, 0, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(RdKafka__Kafka, beginTransaction)
+{
+    kafka_object *intern;
+    rd_kafka_error_t error;
+    long errorCode;
+
+    intern = get_kafka_object(getThis() TSRMLS_CC);
+    if (!intern) {
+        return;
+    }
+
+    error = rd_kafka_begin_transaction(intern->rk);
+
+    if (NULL == error) {
+        RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
+    }
+
+    if (rd_kafka_error_is_fatal(error) || !rd_kafka_error_is_retriable(error)) {
+        zend_throw_exception(ce_kafka_exception, rd_kafka_error_string(error), rd_kafka_error_code(error) TSRMLS_CC);
+        rd_kafka_error_destroy(error);
+        return;
+    }
+
+    errorCode = rd_kafka_error_code(error);
+    rd_kafka_error_destroy(error);
+
+    RETURN_LONG(errorCode);
+}
+/* }}} */
+
+/* {{{ proto int RdKafka\Producer::commitTransaction(int timeout_ms)
+   Commit a transaction */
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_commit_transaction, 0, 0, 1)
+    ZEND_ARG_INFO(0, timeout_ms)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(RdKafka__Kafka, commitTransaction)
+{
+    kafka_object *intern;
+    zend_long timeout_ms;
+    rd_kafka_error_t error;
+    long errorCode;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout_ms) == FAILURE) {
+        return;
+    }
+
+    intern = get_kafka_object(getThis() TSRMLS_CC);
+    if (!intern) {
+        return;
+    }
+
+    error = rd_kafka_commit_transaction(intern->rk, timeout_ms);
+
+    if (NULL == error) {
+        RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
+    }
+
+    if (rd_kafka_error_is_fatal(error) || || rd_kafka_error_txn_requires_abort(error) || !rd_kafka_error_is_retriable(error)) {
+        zend_throw_exception(ce_kafka_exception, rd_kafka_error_string(error), rd_kafka_error_code(error) TSRMLS_CC);
+        rd_kafka_error_destroy(error);
+        return;
+    }
+
+    errorCode = rd_kafka_error_code(error);
+    rd_kafka_error_destroy(error);
+
+    RETURN_LONG(errorCode);
+}
+/* }}} */
+
+#endif
+
 static const zend_function_entry kafka_producer_fe[] = {
     PHP_ME(RdKafka__Producer, __construct, arginfo_kafka_producer___construct, ZEND_ACC_PUBLIC)
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
+    PHP_ME(RdKafka__Producer, initTransactions, arginfo_kafka_init_transactions, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__Producer, beginTransactionTransactions, arginfo_kafka_begin_transaction, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__Producer, commitTransaction, arginfo_kafka_commit_transaction, ZEND_ACC_PUBLIC)
+#endif
     PHP_FE_END
 };
 
