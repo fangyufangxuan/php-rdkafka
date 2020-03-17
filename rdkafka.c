@@ -767,14 +767,14 @@ PHP_METHOD(RdKafka__Producer, __construct)
 /* }}} */
 
 #ifdef HAS_RD_KAFKA_TRANSACTIONS
+
 /* {{{ proto int RdKafka\Producer::initTransactions(int timeout_ms)
    Initializes transactions, needs to be done before producing and starting a transaction */
-
 ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_init_transactions, 0, 0, 1)
     ZEND_ARG_INFO(0, timeout_ms)
 ZEND_END_ARG_INFO()
 
-PHP_METHOD(RdKafka__Kafka, initTransactions)
+PHP_METHOD(RdKafka__Producer, initTransactions)
 {
     kafka_object *intern;
     zend_long timeout_ms;
@@ -815,7 +815,7 @@ PHP_METHOD(RdKafka__Kafka, initTransactions)
 ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_begin_transaction, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-PHP_METHOD(RdKafka__Kafka, beginTransaction)
+PHP_METHOD(RdKafka__Producer, beginTransaction)
 {
     kafka_object *intern;
     rd_kafka_error_t *error;
@@ -852,7 +852,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_commit_transaction, 0, 0, 1)
     ZEND_ARG_INFO(0, timeout_ms)
 ZEND_END_ARG_INFO()
 
-PHP_METHOD(RdKafka__Kafka, commitTransaction)
+PHP_METHOD(RdKafka__Producer, commitTransaction)
 {
     kafka_object *intern;
     zend_long timeout_ms;
