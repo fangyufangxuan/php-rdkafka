@@ -874,7 +874,7 @@ PHP_METHOD(RdKafka__Kafka, commitTransaction)
         RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
     }
 
-    if (rd_kafka_error_is_fatal(error) || || rd_kafka_error_txn_requires_abort(error) || !rd_kafka_error_is_retriable(error)) {
+    if (rd_kafka_error_is_fatal(error) || rd_kafka_error_txn_requires_abort(error) || !rd_kafka_error_is_retriable(error)) {
         zend_throw_exception(ce_kafka_exception, rd_kafka_error_string(error), rd_kafka_error_code(error) TSRMLS_CC);
         rd_kafka_error_destroy(error);
         return;
