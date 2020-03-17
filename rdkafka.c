@@ -893,7 +893,7 @@ static const zend_function_entry kafka_producer_fe[] = {
     PHP_ME(RdKafka__Producer, __construct, arginfo_kafka_producer___construct, ZEND_ACC_PUBLIC)
 #ifdef HAS_RD_KAFKA_TRANSACTIONS
     PHP_ME(RdKafka__Producer, initTransactions, arginfo_kafka_init_transactions, ZEND_ACC_PUBLIC)
-    PHP_ME(RdKafka__Producer, beginTransactionTransactions, arginfo_kafka_begin_transaction, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__Producer, beginTransaction, arginfo_kafka_begin_transaction, ZEND_ACC_PUBLIC)
     PHP_ME(RdKafka__Producer, commitTransaction, arginfo_kafka_commit_transaction, ZEND_ACC_PUBLIC)
 #endif
     PHP_FE_END
