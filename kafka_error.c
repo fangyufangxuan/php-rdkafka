@@ -52,18 +52,13 @@ static void kafka_error_free(zend_object *object TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
-void kafka_error_new(zend_object *return_value, rd_kafka_error_t *error TSRMLS_DC) /* {{{ */
+void kafka_error_new(zval *return_value, rd_kafka_error_t *error TSRMLS_DC) /* {{{ */
 {
-    object_intern *object_intern;
+    object_init_ex(return_value, ce_kafka_error);
 
-    object_intern = alloc_object(object_intern, ce_kafka_error);
-    zend_object_std_init(&object_intern->std, ce_kafka_error TSRMLS_CC);
-    object_properties_init(&object_intern->std, ce_kafka_error);
+    object_intern *intern = get_custom_object_zval(object_intern, return_value);
 
-    object_intern->error = error;
-
-    STORE_OBJECT(return_value, object_intern, (zend_objects_store_dtor_t) zend_objects_destroy_object, kafka_error_free, NULL);
-    SET_OBJECT_HANDLERS(return_value, &handlers);
+    intern->error = error;
 }
 /* }}} */
 
