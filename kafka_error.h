@@ -20,4 +20,4 @@
 #include "librdkafka/rdkafka.h"
 
 void kafka_error_minit(TSRMLS_D);
-void kafka_error_new(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC);
+void kafka_error_new(zend_object *return_value, rd_kafka_error_t *error TSRMLS_DC);

@@ -38,8 +38,9 @@ typedef struct _object_intern {
 } object_intern;
 
 zend_class_entry * ce_kafka_error;
+static zend_object_handlers handlers;
 
-static void kafka_conf_free(zend_object *object TSRMLS_DC) /* {{{ */
+static void kafka_error_free(zend_object *object TSRMLS_DC) /* {{{ */
 {
     object_intern *intern = get_custom_object(object_intern, object);
 
@@ -51,18 +52,18 @@ static void kafka_conf_free(zend_object *object TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
-void kafka_error_new(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC) /* {{{ */
+void kafka_error_new(zend_object *return_value, rd_kafka_error_t *error TSRMLS_DC) /* {{{ */
 {
     object_intern *object_intern;
 
-    object_intern = alloc_object(oerr, ce_kafka_error);
+    object_intern = alloc_object(object_intern, ce_kafka_error);
     zend_object_std_init(&object_intern->std, ce_kafka_error TSRMLS_CC);
     object_properties_init(&object_intern->std, ce_kafka_error);
 
     object_intern->error = error;
 
-    STORE_OBJECT(retval, object_intern, (zend_objects_store_dtor_t) zend_objects_destroy_object, kafka_error_free, NULL);
-    SET_OBJECT_HANDLERS(retval, &handlers);
+    STORE_OBJECT(return_value, object_intern, (zend_objects_store_dtor_t) zend_objects_destroy_object, kafka_error_free, NULL);
+    SET_OBJECT_HANDLERS(return_value, &handlers);
 }
 /* }}} */
 
@@ -158,7 +159,7 @@ PHP_METHOD(RdKafka__KafkaError, isFatal)
 
     intern = get_object(getThis() TSRMLS_CC);
 
-    RETURN(1 == rd_kafka_error_is_fatal(intern->error));
+    RETURN_BOOL(1 == rd_kafka_error_is_fatal(intern->error));
 }
 /* }}} */
 
@@ -178,7 +179,7 @@ PHP_METHOD(RdKafka__KafkaError, isRetriable)
 
     intern = get_object(getThis() TSRMLS_CC);
 
-    RETURN(1 == rd_kafka_error_is_retriable(intern->error));
+    RETURN_BOOL(1 == rd_kafka_error_is_retriable(intern->error));
 }
 /* }}} */
 
@@ -204,8 +205,8 @@ PHP_METHOD(RdKafka__KafkaError, transactionRequiresAbort)
 
 static const zend_function_entry kafka_error_fe[] = { /* {{{ */
     PHP_ME(RdKafka__KafkaError, getCode, arginfo_kafka_error_get_code, ZEND_ACC_PUBLIC)
-    PHP_ME(RdKafka__KafkaError, getName, arginfo_kafka_error_get_ name, ZEND_ACC_PUBLIC)
-    PHP_ME(RdKafka__KafkaError, getMessage, arginfo_kafka_error_get_messge, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__KafkaError, getName, arginfo_kafka_error_get_name, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__KafkaError, getMessage, arginfo_kafka_error_get_message, ZEND_ACC_PUBLIC)
     PHP_ME(RdKafka__KafkaError, isFatal, arginfo_kafka_error_is_fatal, ZEND_ACC_PUBLIC)
     PHP_ME(RdKafka__KafkaError, isRetriable, arginfo_kafka_error_is_retriable, ZEND_ACC_PUBLIC)
     PHP_ME(RdKafka__KafkaError, transactionRequiresAbort, arginfo_kafka_error_transaction_requires_abort, ZEND_ACC_PUBLIC)
