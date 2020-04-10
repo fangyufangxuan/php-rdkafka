@@ -13,6 +13,10 @@ $conf = new RdKafka\Conf();
 if (RD_KAFKA_VERSION >= 0x090000 && false !== getenv('TEST_KAFKA_BROKER_VERSION')) {
     $conf->set('broker.version.fallback', getenv('TEST_KAFKA_BROKER_VERSION'));
 }
+if (class_exists('RdKafka\KafkaError')) {
+    $conf->set('transactional.id', 'transactional-producer');
+}
+
 $conf->setErrorCb(function ($producer, $err, $errstr) {
     printf("%s: %s\n", rd_kafka_err2str($err), $errstr);
     exit;
@@ -29,6 +33,11 @@ $producer = new RdKafka\Producer($conf);
 if ($producer->addBrokers(getenv('TEST_KAFKA_BROKERS')) < 1) {
     echo "Failed adding brokers\n";
     exit;
+}
+
+if (class_exists('RdKafka\KafkaError')) {
+    $producer->initTransactions(10000);
+    $producer->beginTransaction();
 }
 
 $topicName = sprintf("test_rdkafka_%s", uniqid());
@@ -48,6 +57,10 @@ while ($producer->getOutQLen()) {
     $producer->poll(50);
 }
 
+if (class_exists('RdKafka\KafkaError')) {
+    $producer->commitTransaction(10000);
+}
+
 printf("%d messages delivered\n", $delivered);
 
 $consumer = new RdKafka\Consumer($conf);
@@ -64,11 +77,11 @@ while (true) {
     if (!$msg || $msg->err === RD_KAFKA_RESP_ERR__PARTITION_EOF) {
         break;
     }
-    
+
     if (RD_KAFKA_RESP_ERR_NO_ERROR !== $msg->err) {
         throw new Exception($msg->errstr(), $msg->err);
     }
-    
+
     printf("Got message: %s\n", $msg->payload);
 }
 --EXPECT--
