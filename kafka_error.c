@@ -49,6 +49,7 @@ static void kafka_conf_free(zend_object *object TSRMLS_DC) /* {{{ */
 
     free_custom_object(intern);
 }
+/* }}} */
 
 void kafka_error_new(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC) /* {{{ */
 {
@@ -63,13 +64,15 @@ void kafka_error_new(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC
     STORE_OBJECT(retval, object_intern, (zend_objects_store_dtor_t) zend_objects_destroy_object, kafka_error_free, NULL);
     SET_OBJECT_HANDLERS(retval, &handlers);
 }
+/* }}} */
 
-object_intern * get_object(zval *zerr TSRMLS_DC)
+object_intern * get_object(zval *zerr TSRMLS_DC) /* {{{ */
 {
     object_intern *oerr = get_custom_object_zval(object_intern, zerr);
 
     return oerr;
 }
+/* }}} */
 
 /* {{{ private constructor */
 PHP_METHOD(RdKafka__KafkaError, __construct)
