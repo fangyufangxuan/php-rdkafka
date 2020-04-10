@@ -800,7 +800,7 @@ PHP_METHOD(RdKafka__Producer, initTransactions)
         RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
     }
 
-    kafka_error_new(return_value, error);
+    kafka_error_new(return_value, error TSRMLS_CC);
 }
 /* }}} */
 
@@ -827,7 +827,7 @@ PHP_METHOD(RdKafka__Producer, beginTransaction)
         RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
     }
 
-    kafka_error_new(return_value, error);
+    kafka_error_new(return_value, error TSRMLS_CC);
 }
 /* }}} */
 
@@ -860,7 +860,7 @@ PHP_METHOD(RdKafka__Producer, commitTransaction)
         RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
     }
 
-    kafka_error_new(return_value, error);
+    kafka_error_new(return_value, error TSRMLS_CC);
 }
 /* }}} */
 
