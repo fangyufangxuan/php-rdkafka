@@ -15,12 +15,12 @@
   | Author: Arnaud Le Blanc <arnaud.lb@gmail.com>                        |
   +----------------------------------------------------------------------+
 */
-#ifdef HAS_RD_KAFKA_TRANSACTIONS
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
 #include "php.h"
 #include "php_rdkafka.h"
 #include "php_rdkafka_priv.h"
@@ -115,7 +115,7 @@ PHP_METHOD(RdKafka__KafkaError, getName)
 
     intern = get_object(getThis() TSRMLS_CC);
 
-    RETURN_STRING(rd_kafka_error_name(intern->error));
+    RDKAFKA_RETURN_STRING(rd_kafka_error_name(intern->error));
 }
 /* }}} */
 
@@ -135,7 +135,7 @@ PHP_METHOD(RdKafka__KafkaError, getMessage)
 
     intern = get_object(getThis() TSRMLS_CC);
 
-    RETURN_STRING(rd_kafka_error_string(intern->error));
+    RDKAFKA_RETURN_STRING(rd_kafka_error_string(intern->error));
 }
 /* }}} */
 
