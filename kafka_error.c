@@ -16,6 +16,10 @@
   +----------------------------------------------------------------------+
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "php.h"
 #include "php_rdkafka.h"
 #include "php_rdkafka_priv.h"
@@ -48,7 +52,7 @@ static void kafka_conf_free(zend_object *object TSRMLS_DC) /* {{{ */
 
 void kafka_error_new(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC) /* {{{ */
 {
-    kafka_error_object *oerr;
+    object_intern *object_intern;
 
     object_intern = alloc_object(oerr, ce_kafka_error);
     zend_object_std_init(&object_intern->std, ce_kafka_error TSRMLS_CC);
@@ -60,9 +64,9 @@ void kafka_error_new(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC
     SET_OBJECT_HANDLERS(retval, &handlers);
 }
 
-kafka_error_object * get_kafka_error_object(zval *zerr TSRMLS_DC)
+object_intern * get_object(zval *zerr TSRMLS_DC)
 {
-    kafka_error_object *oerr = get_custom_object_zval(kafka_error_object, zerr);
+    object_intern *oerr = get_custom_object_zval(object_intern, zerr);
 
     return oerr;
 }
@@ -211,7 +215,7 @@ void kafka_error_minit(TSRMLS_D) /* {{{ */
 
     handlers = kafka_default_object_handlers;
     set_object_handler_free_obj(&handlers, kafka_error_free);
-    set_object_handler_offset(&handlers, XtOffsetOf(kafka_error_object, std));
+    set_object_handler_offset(&handlers, XtOffsetOf(object_intern, std));
 
     INIT_NS_CLASS_ENTRY(ce, "RdKafka", "KafkaError", kafka_error_fe);
     ce_kafka_error = zend_register_internal_class(&ce TSRMLS_CC);
