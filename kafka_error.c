@@ -19,10 +19,9 @@
 #include "php.h"
 #include "php_rdkafka.h"
 #include "php_rdkafka_priv.h"
-#include "librdkafka/rdkafka.h"
+#include "Zend/zend_interfaces.h"
 #include "Zend/zend_exceptions.h"
 #include "kafka_error.h"
-#include "zeval.h"
 
 typedef struct _object_intern {
 #if PHP_MAJOR_VERSION < 7
@@ -47,7 +46,7 @@ static void kafka_conf_free(zend_object *object TSRMLS_DC) /* {{{ */
     free_custom_object(intern);
 }
 
-static zend_object_value kafka_error_new(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC) /* {{{ */
+void kafka_error_new(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC) /* {{{ */
 {
     kafka_error_object *oerr;
 
@@ -59,8 +58,6 @@ static zend_object_value kafka_error_new(zval *return_value, const rd_kafka_erro
 
     STORE_OBJECT(retval, object_intern, (zend_objects_store_dtor_t) zend_objects_destroy_object, kafka_error_free, NULL);
     SET_OBJECT_HANDLERS(retval, &handlers);
-
-    return retval;
 }
 
 kafka_error_object * get_kafka_error_object(zval *zerr TSRMLS_DC)

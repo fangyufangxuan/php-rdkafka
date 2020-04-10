@@ -16,7 +16,8 @@
   +----------------------------------------------------------------------+
 */
 
+#include "zeval.h"
+#include "librdkafka/rdkafka.h"
+
 void kafka_error_minit(TSRMLS_D);
 void kafka_error_new(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC);
-
-extern zend_class_entry * ce_kafka_error;
