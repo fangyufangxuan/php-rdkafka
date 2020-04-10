@@ -15,9 +15,11 @@
   | Author: Arnaud Le Blanc <arnaud.lb@gmail.com>                        |
   +----------------------------------------------------------------------+
 */
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
 
 #include "zeval.h"
 #include "librdkafka/rdkafka.h"
 
 void kafka_error_minit(TSRMLS_D);
 void kafka_error_new(zval *return_value, rd_kafka_error_t *error TSRMLS_DC);
+#endif

@@ -15,6 +15,7 @@
   | Author: Arnaud Le Blanc <arnaud.lb@gmail.com>                        |
   +----------------------------------------------------------------------+
 */
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -219,3 +220,5 @@ void kafka_error_minit(TSRMLS_D) /* {{{ */
     INIT_NS_CLASS_ENTRY(ce, "RdKafka", "KafkaError", kafka_error_fe);
     ce_kafka_error = zend_register_internal_class(&ce TSRMLS_CC);
 } /* }}} */
+
+#endif
