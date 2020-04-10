@@ -22,6 +22,10 @@
 #include "config.h"
 #endif
 
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
+#include "kafka_error.h"
+#endif
+
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
@@ -778,7 +782,7 @@ PHP_METHOD(RdKafka__Producer, initTransactions)
 {
     kafka_object *intern;
     zend_long timeout_ms;
-    rd_kafka_error_t *error;
+    const rd_kafka_error_t *error;
     long errorCode;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout_ms) == FAILURE) {
@@ -796,16 +800,7 @@ PHP_METHOD(RdKafka__Producer, initTransactions)
         RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
     }
 
-    if (rd_kafka_error_is_fatal(error) || !rd_kafka_error_is_retriable(error)) {
-        zend_throw_exception(ce_kafka_exception, rd_kafka_error_string(error), rd_kafka_error_code(error) TSRMLS_CC);
-        rd_kafka_error_destroy(error);
-        return;
-    }
-
-    errorCode = rd_kafka_error_code(error);
-    rd_kafka_error_destroy(error);
-
-    RETURN_LONG(errorCode);
+    kafka_error_new(return_value, error);
 }
 /* }}} */
 
@@ -818,7 +813,7 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__Producer, beginTransaction)
 {
     kafka_object *intern;
-    rd_kafka_error_t *error;
+    const rd_kafka_error_t *error;
     long errorCode;
 
     intern = get_kafka_object(getThis() TSRMLS_CC);
@@ -832,16 +827,7 @@ PHP_METHOD(RdKafka__Producer, beginTransaction)
         RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
     }
 
-    if (rd_kafka_error_is_fatal(error) || !rd_kafka_error_is_retriable(error)) {
-        zend_throw_exception(ce_kafka_exception, rd_kafka_error_string(error), rd_kafka_error_code(error) TSRMLS_CC);
-        rd_kafka_error_destroy(error);
-        return;
-    }
-
-    errorCode = rd_kafka_error_code(error);
-    rd_kafka_error_destroy(error);
-
-    RETURN_LONG(errorCode);
+    kafka_error_new(return_value, error);
 }
 /* }}} */
 
@@ -856,7 +842,7 @@ PHP_METHOD(RdKafka__Producer, commitTransaction)
 {
     kafka_object *intern;
     zend_long timeout_ms;
-    rd_kafka_error_t *error;
+    const rd_kafka_error_t *error;
     long errorCode;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout_ms) == FAILURE) {
@@ -874,16 +860,7 @@ PHP_METHOD(RdKafka__Producer, commitTransaction)
         RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
     }
 
-    if (rd_kafka_error_is_fatal(error) || rd_kafka_error_txn_requires_abort(error) || !rd_kafka_error_is_retriable(error)) {
-        zend_throw_exception(ce_kafka_exception, rd_kafka_error_string(error), rd_kafka_error_code(error) TSRMLS_CC);
-        rd_kafka_error_destroy(error);
-        return;
-    }
-
-    errorCode = rd_kafka_error_code(error);
-    rd_kafka_error_destroy(error);
-
-    RETURN_LONG(errorCode);
+    kafka_error_new(return_value, error);
 }
 /* }}} */
 
@@ -995,6 +972,9 @@ PHP_MINIT_FUNCTION(rdkafka)
     ce_kafka_exception = rdkafka_register_internal_class_ex(&ce, zend_exception_get_default(TSRMLS_C) TSRMLS_CC);
 
     kafka_conf_minit(TSRMLS_C);
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
+    kafka_error_minit(TSRMLS_C);
+#endif
     kafka_kafka_consumer_minit(TSRMLS_C);
     kafka_message_minit(TSRMLS_C);
     kafka_metadata_minit(TSRMLS_C);
