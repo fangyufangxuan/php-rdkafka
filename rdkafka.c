@@ -864,6 +864,39 @@ PHP_METHOD(RdKafka__Producer, commitTransaction)
 }
 /* }}} */
 
+/* {{{ proto int RdKafka\Producer::abortTransaction(int timeout_ms)
+   Commit a transaction */
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_abort_transaction, 0, 0, 1)
+    ZEND_ARG_INFO(0, timeout_ms)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(RdKafka__Producer, abortTransaction)
+{
+    kafka_object *intern;
+    zend_long timeout_ms;
+    const rd_kafka_error_t *error;
+    long errorCode;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout_ms) == FAILURE) {
+        return;
+    }
+
+    intern = get_kafka_object(getThis() TSRMLS_CC);
+    if (!intern) {
+        return;
+    }
+
+    error = rd_kafka_abort_transaction(intern->rk, timeout_ms);
+
+    if (NULL == error) {
+        RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
+    }
+
+    kafka_error_new(return_value, error TSRMLS_CC);
+}
+/* }}} */
+
 #endif
 
 static const zend_function_entry kafka_producer_fe[] = {
@@ -872,6 +905,7 @@ static const zend_function_entry kafka_producer_fe[] = {
     PHP_ME(RdKafka__Producer, initTransactions, arginfo_kafka_init_transactions, ZEND_ACC_PUBLIC)
     PHP_ME(RdKafka__Producer, beginTransaction, arginfo_kafka_begin_transaction, ZEND_ACC_PUBLIC)
     PHP_ME(RdKafka__Producer, commitTransaction, arginfo_kafka_commit_transaction, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__Producer, abortTransaction, arginfo_kafka_abort_transaction, ZEND_ACC_PUBLIC)
 #endif
     PHP_FE_END
 };
