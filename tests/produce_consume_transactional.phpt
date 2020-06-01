@@ -13,6 +13,10 @@ $conf = new RdKafka\Conf();
 if (RD_KAFKA_VERSION >= 0x090000 && false !== getenv('TEST_KAFKA_BROKER_VERSION')) {
     $conf->set('broker.version.fallback', getenv('TEST_KAFKA_BROKER_VERSION'));
 }
+if (class_exists('RdKafka\KafkaError')) {
+    $conf->set('transactional.id', 'transactional-producer');
+}
+
 $conf->setErrorCb(function ($producer, $err, $errstr) {
     printf("%s: %s\n", rd_kafka_err2str($err), $errstr);
     exit;
@@ -31,6 +35,11 @@ if ($producer->addBrokers(getenv('TEST_KAFKA_BROKERS')) < 1) {
     exit;
 }
 
+if (class_exists('RdKafka\KafkaError')) {
+    $producer->initTransactions(10000);
+    $producer->beginTransaction();
+}
+
 $topicName = sprintf("test_rdkafka_%s", uniqid());
 
 $topic = $producer->newTopic($topicName);
@@ -46,6 +55,10 @@ for ($i = 0; $i < 10; $i++) {
 
 while ($producer->getOutQLen()) {
     $producer->poll(50);
+}
+
+if (class_exists('RdKafka\KafkaError')) {
+    $producer->commitTransaction(10000);
 }
 
 printf("%d messages delivered\n", $delivered);

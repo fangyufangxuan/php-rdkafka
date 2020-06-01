@@ -801,6 +801,7 @@ PHP_METHOD(RdKafka__Producer, initTransactions)
     }
 
     kafka_error_new(return_value, error TSRMLS_CC);
+    zend_throw_exception_object(return_value TSRMLS_CC);
 }
 /* }}} */
 
@@ -828,6 +829,7 @@ PHP_METHOD(RdKafka__Producer, beginTransaction)
     }
 
     kafka_error_new(return_value, error TSRMLS_CC);
+    zend_throw_exception_object(return_value TSRMLS_CC);
 }
 /* }}} */
 
@@ -861,6 +863,7 @@ PHP_METHOD(RdKafka__Producer, commitTransaction)
     }
 
     kafka_error_new(return_value, error TSRMLS_CC);
+    zend_throw_exception_object(return_value TSRMLS_CC);
 }
 /* }}} */
 
@@ -894,6 +897,7 @@ PHP_METHOD(RdKafka__Producer, abortTransaction)
     }
 
     kafka_error_new(return_value, error TSRMLS_CC);
+    zend_throw_exception_object(return_value TSRMLS_CC);
 }
 /* }}} */
 

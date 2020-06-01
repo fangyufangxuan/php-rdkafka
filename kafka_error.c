@@ -29,13 +29,7 @@
 #include "kafka_error.h"
 
 typedef struct _object_intern {
-#if PHP_MAJOR_VERSION < 7
-    zend_object                 std;
-#endif
-    rd_kafka_error_t *error;
-#if PHP_MAJOR_VERSION >= 7
-    zend_object                 std;
-#endif
+    zend_object std;
 } object_intern;
 
 zend_class_entry * ce_kafka_error;
@@ -44,8 +38,6 @@ static zend_object_handlers handlers;
 static void kafka_error_free(zend_object *object TSRMLS_DC) /* {{{ */
 {
     object_intern *intern = get_custom_object(object_intern, object);
-
-    rd_kafka_error_destroy(intern->error);
 
     zend_object_std_dtor(&intern->std TSRMLS_CC);
 
@@ -57,9 +49,12 @@ void kafka_error_new(zval *return_value, rd_kafka_error_t *error TSRMLS_DC) /* {
 {
     object_init_ex(return_value, ce_kafka_error);
 
-    object_intern *intern = get_custom_object_zval(object_intern, return_value);
-
-    intern->error = error;
+    zend_update_property_string(ce_kafka_error, return_value, ZEND_STRL("message"), rd_kafka_error_name(error) TSRMLS_CC);
+    zend_update_property_long(ce_kafka_error, return_value, ZEND_STRL("code"), rd_kafka_error_code(error) TSRMLS_CC);
+    zend_update_property_string(ce_kafka_error, return_value, ZEND_STRL("string"), rd_kafka_error_string(error) TSRMLS_CC);
+    zend_update_property_bool(ce_kafka_error, return_value, ZEND_STRL("isFatal"), rd_kafka_error_is_fatal(error) TSRMLS_CC);
+    zend_update_property_bool(ce_kafka_error, return_value, ZEND_STRL("isRetriable"), rd_kafka_error_is_retriable(error) TSRMLS_CC);
+    zend_update_property_bool(ce_kafka_error, return_value, ZEND_STRL("transactionRequiresAbort"), rd_kafka_error_txn_requires_abort(error) TSRMLS_CC);
 }
 /* }}} */
 
@@ -71,43 +66,49 @@ object_intern * get_object(zval *zerr TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
-/* {{{ private constructor */
-PHP_METHOD(RdKafka__KafkaError, __construct)
-{
-    zend_throw_exception(NULL, "Private constructor", 0 TSRMLS_CC);
-    return;
-}
-/* }}} */
-
-/* {{{ proto void RdKafka\KafkaError::getCode()
-    Get code of error */
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_error_get_code, 0, 0, 0)
+/* {{{ proto RdKafka\KafkaErrorException::__construct(string $message, int $code[, string $string, bool $isFatal, bool $isRetriable, bool $transactionRequiresAbort]) */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_error___construct, 0, 0, 6)
+    ZEND_ARG_INFO(0, message)
+    ZEND_ARG_INFO(0, code)
+    ZEND_ARG_INFO(0, string)
+    ZEND_ARG_INFO(0, isFatal)
+    ZEND_ARG_INFO(0, isRetriable)
+    ZEND_ARG_INFO(0, transactionRequiresAbort)
 ZEND_END_ARG_INFO()
 
-PHP_METHOD(RdKafka__KafkaError, getCode)
+PHP_METHOD(RdKafka__KafkaErrorException, __construct)
 {
+    char *message, *string = "";
+    arglen_t message_length, string_length;
+    zend_bool isFatal = 0, isRetriable = 0, transactionRequiresAbort = 0;
+    zend_long code;
     object_intern *intern;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl|sbbb", &message, &message_length, &code, &string, &string_length, &isFatal, &isRetriable, &transactionRequiresAbort) == FAILURE) {
         return;
     }
 
-    intern = get_object(getThis() TSRMLS_CC);
+    intern = get_custom_object_zval(object_intern, getThis());
 
-    RETURN_LONG(rd_kafka_error_code(intern->error));
+    zend_update_property_string(ce_kafka_error, getThis(), ZEND_STRL("message"), message TSRMLS_CC);
+    zend_update_property_long(ce_kafka_error, getThis(), ZEND_STRL("code"), code TSRMLS_CC);
+    zend_update_property_string(ce_kafka_error, getThis(), ZEND_STRL("string"), string TSRMLS_CC);
+    zend_update_property_bool(ce_kafka_error, getThis(), ZEND_STRL("isFatal"), isFatal TSRMLS_CC);
+    zend_update_property_bool(ce_kafka_error, getThis(), ZEND_STRL("isRetriable"), code TSRMLS_CC);
+    zend_update_property_bool(ce_kafka_error, getThis(), ZEND_STRL("transactionRequiresAbort"), code TSRMLS_CC);
 }
 /* }}} */
 
-/* {{{ proto void RdKafka\KafkaError::getName()
+/* {{{ proto void RdKafka\KafkaErrorException::getString()
     Get name of error */
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_error_get_name, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_error_get_string, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-PHP_METHOD(RdKafka__KafkaError, getName)
+PHP_METHOD(RdKafka__KafkaErrorException, getString)
 {
     object_intern *intern;
+    zval *res;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
         return;
@@ -115,39 +116,27 @@ PHP_METHOD(RdKafka__KafkaError, getName)
 
     intern = get_object(getThis() TSRMLS_CC);
 
-    RDKAFKA_RETURN_STRING(rd_kafka_error_name(intern->error));
-}
-/* }}} */
-
-/* {{{ proto void RdKafka\KafkaError::getMessage()
-    Get message of error */
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_error_get_message, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
-PHP_METHOD(RdKafka__KafkaError, getMessage)
-{
-    object_intern *intern;
-
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+    if (!intern) {
         return;
     }
 
-    intern = get_object(getThis() TSRMLS_CC);
-
-    RDKAFKA_RETURN_STRING(rd_kafka_error_string(intern->error));
+    res = rdkafka_read_property(ce_kafka_error, getThis(), ZEND_STRL("string"), 0 TSRMLS_CC);
+    ZVAL_DEREF(res);
+    ZVAL_COPY(return_value, res);
 }
 /* }}} */
 
-/* {{{ proto void RdKafka\KafkaError::isFatal()
+
+/* {{{ proto void RdKafka\KafkaErrorException::isFatal()
     Return true if error is fatal */
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_error_is_fatal, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-PHP_METHOD(RdKafka__KafkaError, isFatal)
+PHP_METHOD(RdKafka__KafkaErrorException, isFatal)
 {
     object_intern *intern;
+    zval *res;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
         return;
@@ -155,19 +144,26 @@ PHP_METHOD(RdKafka__KafkaError, isFatal)
 
     intern = get_object(getThis() TSRMLS_CC);
 
-    RETURN_BOOL(1 == rd_kafka_error_is_fatal(intern->error));
+    if (!intern) {
+        return;
+    }
+
+    res = rdkafka_read_property(ce_kafka_error, getThis(), ZEND_STRL("isFatal"), 0 TSRMLS_CC);
+    ZVAL_DEREF(res);
+    ZVAL_COPY(return_value, res);
 }
 /* }}} */
 
-/* {{{ proto void RdKafka\KafkaError::isRetriable()
+/* {{{ proto void RdKafka\KafkaErrorException::isRetriable()
     Return true if error is fatal */
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_error_is_retriable, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-PHP_METHOD(RdKafka__KafkaError, isRetriable)
+PHP_METHOD(RdKafka__KafkaErrorException, isRetriable)
 {
     object_intern *intern;
+    zval *res;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
         return;
@@ -175,19 +171,26 @@ PHP_METHOD(RdKafka__KafkaError, isRetriable)
 
     intern = get_object(getThis() TSRMLS_CC);
 
-    RETURN_BOOL(1 == rd_kafka_error_is_retriable(intern->error));
+    if (!intern) {
+        return;
+    }
+
+    res = rdkafka_read_property(ce_kafka_error, getThis(), ZEND_STRL("isFatal"), 0 TSRMLS_CC);
+    ZVAL_DEREF(res);
+    ZVAL_COPY(return_value, res);
 }
 /* }}} */
 
-/* {{{ proto void RdKafka\KafkaError::transactionRequiresAbort()
+/* {{{ proto void RdKafka\KafkaErrorException::transactionRequiresAbort()
     Return true if error is fatal */
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_error_transaction_requires_abort, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-PHP_METHOD(RdKafka__KafkaError, transactionRequiresAbort)
+PHP_METHOD(RdKafka__KafkaErrorException, transactionRequiresAbort)
 {
     object_intern *intern;
+    zval *res;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
         return;
@@ -195,17 +198,22 @@ PHP_METHOD(RdKafka__KafkaError, transactionRequiresAbort)
 
     intern = get_object(getThis() TSRMLS_CC);
 
-    RETURN_BOOL(1 == rd_kafka_error_txn_requires_abort(intern->error));
+    if (!intern) {
+        return;
+    }
+
+    res = rdkafka_read_property(ce_kafka_error, getThis(), ZEND_STRL("isFatal"), 0 TSRMLS_CC);
+    ZVAL_DEREF(res);
+    ZVAL_COPY(return_value, res);
 }
 /* }}} */
 
 static const zend_function_entry kafka_error_fe[] = { /* {{{ */
-    PHP_ME(RdKafka__KafkaError, getCode, arginfo_kafka_error_get_code, ZEND_ACC_PUBLIC)
-    PHP_ME(RdKafka__KafkaError, getName, arginfo_kafka_error_get_name, ZEND_ACC_PUBLIC)
-    PHP_ME(RdKafka__KafkaError, getMessage, arginfo_kafka_error_get_message, ZEND_ACC_PUBLIC)
-    PHP_ME(RdKafka__KafkaError, isFatal, arginfo_kafka_error_is_fatal, ZEND_ACC_PUBLIC)
-    PHP_ME(RdKafka__KafkaError, isRetriable, arginfo_kafka_error_is_retriable, ZEND_ACC_PUBLIC)
-    PHP_ME(RdKafka__KafkaError, transactionRequiresAbort, arginfo_kafka_error_transaction_requires_abort, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__KafkaErrorException, __construct, arginfo_kafka_error___construct, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__KafkaErrorException, getString, arginfo_kafka_error_get_string, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__KafkaErrorException, isFatal, arginfo_kafka_error_is_fatal, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__KafkaErrorException, isRetriable, arginfo_kafka_error_is_retriable, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__KafkaErrorException, transactionRequiresAbort, arginfo_kafka_error_transaction_requires_abort, ZEND_ACC_PUBLIC)
     PHP_FE_END
 }; /* }}} */
 
@@ -217,8 +225,13 @@ void kafka_error_minit(TSRMLS_D) /* {{{ */
     set_object_handler_free_obj(&handlers, kafka_error_free);
     set_object_handler_offset(&handlers, XtOffsetOf(object_intern, std));
 
-    INIT_NS_CLASS_ENTRY(ce, "RdKafka", "KafkaError", kafka_error_fe);
-    ce_kafka_error = zend_register_internal_class(&ce TSRMLS_CC);
+    INIT_NS_CLASS_ENTRY(ce, "RdKafka", "KafkaErrorException", kafka_error_fe);
+    ce_kafka_error = rdkafka_register_internal_class_ex(&ce, ce_kafka_exception TSRMLS_CC);
+
+	zend_declare_property_null(ce_kafka_error, ZEND_STRL("string"), ZEND_ACC_PUBLIC TSRMLS_CC);
+    zend_declare_property_bool(ce_kafka_error, ZEND_STRL("isFatal"), 0, ZEND_ACC_PUBLIC TSRMLS_CC);
+    zend_declare_property_bool(ce_kafka_error, ZEND_STRL("isRetriable"), 0, ZEND_ACC_PUBLIC TSRMLS_CC);
+    zend_declare_property_bool(ce_kafka_error, ZEND_STRL("transactionRequiresAbort"), 0, ZEND_ACC_PUBLIC TSRMLS_CC);
 } /* }}} */
 
 #endif
