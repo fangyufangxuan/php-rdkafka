@@ -23,7 +23,7 @@
 #endif
 
 #ifdef HAS_RD_KAFKA_TRANSACTIONS
-#include "kafka_error.h"
+#include "kafka_error_exception.h"
 #endif
 
 #include "php.h"

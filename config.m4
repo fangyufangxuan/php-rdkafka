@@ -27,7 +27,7 @@ if test "$PHP_RDKAFKA" != "no"; then
 
   PHP_ADD_INCLUDE($RDKAFKA_DIR/include)
 
-  SOURCES="rdkafka.c metadata.c metadata_broker.c metadata_topic.c metadata_partition.c metadata_collection.c compat.c conf.c topic.c queue.c message.c fun.c kafka_consumer.c topic_partition.c kafka_error.c"
+  SOURCES="rdkafka.c metadata.c metadata_broker.c metadata_topic.c metadata_partition.c metadata_collection.c compat.c conf.c topic.c queue.c message.c fun.c kafka_consumer.c topic_partition.c"
 
   LIBNAME=rdkafka
   LIBSYMBOL=rd_kafka_new
@@ -73,6 +73,7 @@ if test "$PHP_RDKAFKA" != "no"; then
 
   AC_CHECK_LIB($LIBNAME,[rd_kafka_init_transactions],[
     AC_DEFINE(HAS_RD_KAFKA_TRANSACTIONS,1,[ ])
+    SOURCES="$SOURCES kafka_error_exception.c"
   ],[
     AC_MSG_WARN([transactions are not available])
   ])
