@@ -26,6 +26,7 @@
 #include "Zend/zend_interfaces.h"
 #include "Zend/zend_exceptions.h"
 #include "kafka_error_exception.h"
+#include "zeval.h"
 
 typedef struct _object_intern {
     zend_object std;
@@ -156,8 +157,13 @@ PHP_METHOD(RdKafka__KafkaErrorException, isFatal)
     }
 
     res = rdkafka_read_property(ce_kafka_error, getThis(), ZEND_STRL("isFatal"), 0 TSRMLS_CC);
+
+#if PHP_MAJOR_VERSION >= 7
     ZVAL_DEREF(res);
     ZVAL_COPY(return_value, res);
+#else
+    RETURN_ZVAL(res, 1, 0)
+#endif
 }
 /* }}} */
 
