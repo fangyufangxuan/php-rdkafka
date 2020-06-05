@@ -129,8 +129,13 @@ PHP_METHOD(RdKafka__KafkaErrorException, getString)
     }
 
     res = rdkafka_read_property(ce_kafka_error, getThis(), ZEND_STRL("string"), 0 TSRMLS_CC);
+
+#if PHP_MAJOR_VERSION >= 7
     ZVAL_DEREF(res);
     ZVAL_COPY(return_value, res);
+#else
+    RETURN_ZVAL(res, 1, 0)
+#endif
 }
 /* }}} */
 
@@ -189,8 +194,13 @@ PHP_METHOD(RdKafka__KafkaErrorException, isRetriable)
     }
 
     res = rdkafka_read_property(ce_kafka_error, getThis(), ZEND_STRL("isRetriable"), 0 TSRMLS_CC);
+
+#if PHP_MAJOR_VERSION >= 7
     ZVAL_DEREF(res);
     ZVAL_COPY(return_value, res);
+#else
+    RETURN_ZVAL(res, 1, 0)
+#endif
 }
 /* }}} */
 
@@ -216,8 +226,13 @@ PHP_METHOD(RdKafka__KafkaErrorException, transactionRequiresAbort)
     }
 
     res = rdkafka_read_property(ce_kafka_error, getThis(), ZEND_STRL("transactionRequiresAbort"), 0 TSRMLS_CC);
+
+#if PHP_MAJOR_VERSION >= 7
     ZVAL_DEREF(res);
     ZVAL_COPY(return_value, res);
+#else
+    RETURN_ZVAL(res, 1, 0)
+#endif
 }
 /* }}} */
 
