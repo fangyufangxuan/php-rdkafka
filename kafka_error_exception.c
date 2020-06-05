@@ -49,11 +49,11 @@ void kafka_error_new(zval *return_value, rd_kafka_error_t *error TSRMLS_DC) /* {
     zval errorCode, message;
 
     ZVAL_LONG(&errorCode, rd_kafka_error_code(error));
-    ZVAL_STRING(&message, rd_kafka_error_name(error));
+    RDKAFKA_ZVAL_STRING(&message, rd_kafka_error_name(error));
 
     object_init_ex(return_value, ce_kafka_error);
 
-    zend_call_method(return_value, ce_kafka_exception, NULL, "__construct", sizeof("__construct")-1, NULL, 2, &message, &errorCode);
+    zend_call_method_with_2_params(return_value, ce_kafka_exception, NULL, "__construct", NULL, &message, &errorCode);
 
     zend_update_property_string(ce_kafka_error, return_value, ZEND_STRL("string"), rd_kafka_error_string(error) TSRMLS_CC);
     zend_update_property_bool(ce_kafka_error, return_value, ZEND_STRL("isFatal"), rd_kafka_error_is_fatal(error) TSRMLS_CC);
@@ -96,8 +96,8 @@ PHP_METHOD(RdKafka__KafkaErrorException, __construct)
     intern = get_custom_object_zval(object_intern, getThis());
 
     ZVAL_LONG(&errorCode, code);
-    ZVAL_STRING(&errorMessage, message);
-    zend_call_method(&intern, ce_kafka_exception, NULL, "__construct", sizeof("__construct")-1, NULL, 2, &errorMessage, &errorCode);
+    RDKAFKA_ZVAL_STRING(&errorMessage, message);
+    zend_call_method_with_2_params(&intern, ce_kafka_exception, NULL, "__construct", NULL, &errorMessage, &errorCode);
 
     zend_update_property_string(ce_kafka_error, getThis(), ZEND_STRL("string"), string TSRMLS_CC);
     zend_update_property_bool(ce_kafka_error, getThis(), ZEND_STRL("isFatal"), isFatal TSRMLS_CC);

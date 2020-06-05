@@ -16,8 +16,6 @@ echo sprintf('Exception description: %s', $e->getString()) . PHP_EOL;
 echo sprintf('Exception is fatal: %b', $e->isFatal()) . PHP_EOL;
 echo sprintf('Exception is retriable: %b', $e->isRetriable()) . PHP_EOL;
 echo sprintf('Exception requires transaction abort: %b', $e->transactionRequiresAbort()) . PHP_EOL;
-
-
 --EXPECT--
 Exception message: exception message
 Exception code: -100
