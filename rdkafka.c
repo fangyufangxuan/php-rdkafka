@@ -797,7 +797,7 @@ PHP_METHOD(RdKafka__Producer, initTransactions)
     error = rd_kafka_init_transactions(intern->rk, timeout_ms);
 
     if (NULL == error) {
-        RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
+        return;
     }
 
     kafka_error_new(return_value, error TSRMLS_CC);
@@ -825,7 +825,7 @@ PHP_METHOD(RdKafka__Producer, beginTransaction)
     error = rd_kafka_begin_transaction(intern->rk);
 
     if (NULL == error) {
-        RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
+        return;
     }
 
     kafka_error_new(return_value, error TSRMLS_CC);
@@ -859,7 +859,7 @@ PHP_METHOD(RdKafka__Producer, commitTransaction)
     error = rd_kafka_commit_transaction(intern->rk, timeout_ms);
 
     if (NULL == error) {
-        RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
+        return;
     }
 
     kafka_error_new(return_value, error TSRMLS_CC);
@@ -893,7 +893,7 @@ PHP_METHOD(RdKafka__Producer, abortTransaction)
     error = rd_kafka_abort_transaction(intern->rk, timeout_ms);
 
     if (NULL == error) {
-        RETURN_LONG(RD_KAFKA_RESP_ERR_NO_ERROR);
+        return;
     }
 
     kafka_error_new(return_value, error TSRMLS_CC);
