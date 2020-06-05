@@ -3,6 +3,9 @@ Produce, consume
 --SKIPIF--
 <?php
 require __DIR__ . '/integration-tests-check.php';
+if (!class_exists("RdKafka\\KafkaErrorException")) {
+    echo "skip";
+}
 --FILE--
 <?php
 require __DIR__ . '/integration-tests-check.php';
@@ -35,10 +38,8 @@ if ($producer->addBrokers(getenv('TEST_KAFKA_BROKERS')) < 1) {
     exit;
 }
 
-if (class_exists('RdKafka\KafkaError')) {
-    $producer->initTransactions(10000);
-    $producer->beginTransaction();
-}
+$producer->initTransactions(10000);
+$producer->beginTransaction();
 
 $topicName = sprintf("test_rdkafka_%s", uniqid());
 
@@ -57,9 +58,7 @@ while ($producer->getOutQLen()) {
     $producer->poll(50);
 }
 
-if (class_exists('RdKafka\KafkaError')) {
-    $producer->commitTransaction(10000);
-}
+$producer->commitTransaction(10000);
 
 printf("%d messages delivered\n", $delivered);
 
