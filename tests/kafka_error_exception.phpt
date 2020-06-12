@@ -19,7 +19,7 @@ echo sprintf('Exception requires transaction abort: %b', $e->transactionRequires
 --EXPECT--
 Exception message: exception message
 Exception code: -100
-Exception description: 'exception description'
+Exception description: exception description
 Exception is fatal: 1
 Exception is retriable: 0
 Exception requires transaction abort: 1
