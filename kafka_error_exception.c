@@ -253,9 +253,8 @@ void kafka_error_minit(TSRMLS_D) /* {{{ */
     INIT_NS_CLASS_ENTRY(ce, "RdKafka", "KafkaErrorException", kafka_error_fe);
     ce_kafka_error = rdkafka_register_internal_class_ex(&ce, ce_kafka_exception TSRMLS_CC);
 
-	zend_declare_property_null(ce_kafka_error, ZEND_STRL("string"), ZEND_ACC_PRIVATE TSRMLS_CC);
+    zend_declare_property_null(ce_kafka_error, ZEND_STRL("string"), ZEND_ACC_PRIVATE TSRMLS_CC);
     zend_declare_property_bool(ce_kafka_error, ZEND_STRL("isFatal"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
     zend_declare_property_bool(ce_kafka_error, ZEND_STRL("isRetriable"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
     zend_declare_property_bool(ce_kafka_error, ZEND_STRL("transactionRequiresAbort"), 0, ZEND_ACC_PRIVATE TSRMLS_CC);
 } /* }}} */
-
