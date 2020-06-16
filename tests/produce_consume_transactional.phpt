@@ -13,11 +13,9 @@ require __DIR__ . '/integration-tests-check.php';
 $delivered = 0;
 
 $conf = new RdKafka\Conf();
+$conf->set('transactional.id', 'transactional-producer');
 if (RD_KAFKA_VERSION >= 0x090000 && false !== getenv('TEST_KAFKA_BROKER_VERSION')) {
     $conf->set('broker.version.fallback', getenv('TEST_KAFKA_BROKER_VERSION'));
-}
-if (class_exists('RdKafka\KafkaError')) {
-    $conf->set('transactional.id', 'transactional-producer');
 }
 
 $conf->setErrorCb(function ($producer, $err, $errstr) {
